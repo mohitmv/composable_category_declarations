@@ -13,9 +13,9 @@ Trace g_packets;
 
 Session StartSession() {
   g_packets.clear();
+  const auto& registry_slots = internal::GetRegistrySlots();
   for (size_t i = 0; i <= internal::kMaxCategorySlotNumber; i++) {
-    const auto& slot = internal::category_declaration_slots[i];
-    std::cout << "slot[" << i << "].length = " << slot.length << std::endl;
+    const auto& slot = registry_slots[i];
     for (size_t j = 0; j < slot.length; j++) {
       size_t category_id = (j << internal::kNumBitsRequiredForCategorySlotNumber) | i;
       AddPacket(TracePacket{TracePacket::MappingIID, category_id, "",
@@ -30,19 +30,22 @@ void Print(const std::vector<TracePacket>& packets) {
     const auto& packet = packets[i];
     std::cout << "packet[" << i << "]: {";
     if (packet.type ==TracePacket::MappingIID) {
-      std::cout << "category_id " << packet.category_id << " => "
-                << packet.category_name;
+      std::cout << "Mapping: category_id " << packet.category_id << " => '"
+                << packet.category_name << "'";
     } else {
+      std::cout << "Event: ";
+      if (packet.category_name.size() > 0) {
+        std::cout << "category_name = " << packet.category_name << ", ";
+      }
       std::cout << "category_id=" << packet.category_id << ", event_name="
         << packet.event_name;
-      if (packet.category_name.size() > 0) {
-        std::cout << ", category_name = " << packet.category_name;
-      }
     }
     std::cout << "}\n";
   }
 }
 
+// Populate `category_name` on event with only category_id, using the
+// mapping info available on initial packets.
 Trace TraceProcess(const Trace& packets) {
   Trace output;
   std::unordered_map<size_t, string> category_id_map;

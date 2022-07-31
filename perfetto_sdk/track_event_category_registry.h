@@ -2,7 +2,7 @@
 
 #include <cstddef>
 #include <type_traits>
-#include <iostream>
+#include <vector>
 
 namespace perfetto {
 
@@ -84,7 +84,9 @@ struct TrackEventCategoryRegistry {
   const char* compilation_unit_name = nullptr;
 };
 
-extern TrackEventCategoryRegistry category_declaration_slots[1 + kMaxCategorySlotNumber];
+using RegistrySlotsType = TrackEventCategoryRegistry[1 + kMaxCategorySlotNumber];
+
+RegistrySlotsType& GetRegistrySlots();
 
 template<size_t category_id>
 constexpr const Category& GetCategoryAtCompileTime() {
@@ -96,18 +98,9 @@ constexpr const Category& GetCategoryAtCompileTime() {
 const Category* GetCategoryAtRunTime(size_t category_id);
 
 // Its thread safe, because static-init happens sequentially.
-struct RegisterCategoryDeclaration3 {
-  RegisterCategoryDeclaration3(size_t slot_number, TrackEventCategoryRegistry decl) {
-    std::cout << "RegisterCategoryDeclaration3" << std::endl;
-  }
+struct CategoryDeclarationOnConstructor {
+  CategoryDeclarationOnConstructor(size_t slot_number, TrackEventCategoryRegistry decl);
 };
-
-struct RegisterCategoryDeclaration2 {
-  RegisterCategoryDeclaration2(size_t slot_number, TrackEventCategoryRegistry decl) {
-    std::cout << "RegisterCategoryDeclaration2" << std::endl;
-  }
-};
-
 
 }  // namespace intenal
 }  // namespace perfetto
@@ -127,22 +120,21 @@ template<> struct CategoryDeclarationSlot<slot_number> { \
 #define PERFETTO_CATEGORY_DECLARATION_SLOT_NUMBER(n) (n)
 
 // Should be used only in global namespace.
+//
+// Implementation Detail:
+// The local variable `category_decl_tmp_var` is fine because one TU will never
+// use `PERFETTO_DEFINE_CATEGORIES` multiple times, and this symbol is inside
+// anonymous namespace, hence it won't collide with other TUs (i.e. 
+// PERFETTO_DEFINE_CATEGORIES in other TUs) at link time.
 #define PERFETTO_DEFINE_CATEGORIES(slot_number)   \
 namespace perfetto { \
 namespace internal { \
 const ::perfetto::Category CategoryDeclarationSlot<slot_number>::kCategories[]; \
 namespace {   \
-S s3(5); \
-::perfetto::internal::RegisterCategoryDeclaration3 category_registration_tmp_var(\
+::perfetto::internal::CategoryDeclarationOnConstructor category_decl_tmp_var(\
   slot_number, ::perfetto::internal::TrackEventCategoryRegistry{ \
     &::perfetto::internal::CategoryDeclarationSlot<slot_number>::kCategories[0], \
     ::perfetto::internal::CategoryDeclarationSlot<slot_number>::kCategoryCount, \
     __FILE__}); \
-::perfetto::internal::RegisterCategoryDeclaration2 category_registration_tmp_var2(\
-  slot_number, ::perfetto::internal::TrackEventCategoryRegistry{ \
-    &::perfetto::internal::CategoryDeclarationSlot<slot_number>::kCategories[0], \
-    ::perfetto::internal::CategoryDeclarationSlot<slot_number>::kCategoryCount, \
-    __FILE__}); \
-S s2(4); \
 }}}
 

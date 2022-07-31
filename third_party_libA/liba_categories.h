@@ -8,11 +8,3 @@ PERFETTO_DECLARE_CATEGORIES(
   perfetto::Category{"libA_Cat2"},
   perfetto::Category{"libA_Cat3"},
 );
-
-#include <iostream>
-
-struct S {
-  S() { std::cout << "S::S" << std::endl; }
-  S(int x) { std::cout << "S::S x = " << x << std::endl; }
-};
-

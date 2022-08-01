@@ -1,7 +1,7 @@
 #include "main_using_libA.h"
 
 #include "main_app_categories.h"
-#include "third_party_libA/libA.h"  // Exposing libA's categories as well.
+#include "third_party_libA/libA.h" // Exposing libA's categories as well.
 
 // An example of TU having access to only `main_app_categories` and
 // `libA_categories`.

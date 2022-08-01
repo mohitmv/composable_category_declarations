@@ -1,7 +1,7 @@
 #include "main_using_libA_and_B.h"
 
-#include "third_party_libA/libA.h"  // Exposing libA's categories as well.
-#include "third_party_libB/libB.h"  // Exposing libB's categories as well.
+#include "third_party_libA/libA.h" // Exposing libA's categories as well.
+#include "third_party_libB/libB.h" // Exposing libB's categories as well.
 
 // An example of TU having access to only `libA_categories` and
 // `libB_categories` but dont have access to `main_app_categories`.
@@ -18,4 +18,3 @@ void MainFunc1UsingLibAAndB() {
     LibB_Func1();
   }
 }
-

@@ -1,5 +1,5 @@
-#include "perfetto_sdk/tracing.h"
 #include "libA.h"
+#include "perfetto_sdk/tracing.h"
 
 #include <iostream>
 
@@ -9,8 +9,7 @@ void TopLevelFunc() {
   LibA_Func3();
 }
 
-template<size_t input_value>
-struct Value {
+template <size_t input_value> struct Value {
   static constexpr size_t value = input_value;
 };
 
@@ -20,7 +19,8 @@ void Test1() {
   // Wrapped in Value<> to prove that expression returned by GetCategoryId is
   // truly a compile time constant.
   std::cout << "category_id = "
-    << Value<GetCategoryId<unique_type1>("libA_Cat2")>::value << std::endl;
+            << Value<GetCategoryId<unique_type1>("libA_Cat2")>::value
+            << std::endl;
 }
 
 int main() {

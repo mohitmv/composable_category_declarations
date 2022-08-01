@@ -1,5 +1,5 @@
-#include "perfetto_sdk/tracing.h"
 #include "libB.h"
+#include "perfetto_sdk/tracing.h"
 
 #include <iostream>
 

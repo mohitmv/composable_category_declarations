@@ -2,13 +2,9 @@
 
 #include "libA_categories.h"
 
-inline void LibA_Func1() {
-  TRACE_EVENT("libA_Cat2", "LibA_Func1");
-}
+inline void LibA_Func1() { TRACE_EVENT("libA_Cat2", "LibA_Func1"); }
 
-inline void LibA_Func2() {
-  TRACE_EVENT("libA_Cat3", "LibA_Func2");
-}
+inline void LibA_Func2() { TRACE_EVENT("libA_Cat3", "LibA_Func2"); }
 
 void LibA_Func3();
 

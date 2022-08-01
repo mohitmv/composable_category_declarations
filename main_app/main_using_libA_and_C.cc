@@ -1,7 +1,7 @@
 #include "main_using_libA_and_C.h"
 
-#include "third_party_libA/libA.h"  // Exposing libA's categories as well.
-#include "third_party_libC/libC.h"  // Exposing libC's categories as well.
+#include "third_party_libA/libA.h" // Exposing libA's categories as well.
+#include "third_party_libC/libC.h" // Exposing libC's categories as well.
 
 // An example of TU having access to only `libA_categories` and
 // `libC_categories`, but in turn having exposure (transitively) to
@@ -20,4 +20,3 @@ void MainFunc1UsingLibAAndC() {
     LibC_Func1();
   }
 }
-

@@ -2,12 +2,10 @@
 
 #include "libC_categories.h"
 
-#include "third_party_libB/libB.h"  // Exposing libB's categories as well.
-#include "third_party_libA/libA.h"  // Exposing libA's categories as well.
+#include "third_party_libA/libA.h" // Exposing libA's categories as well.
+#include "third_party_libB/libB.h" // Exposing libB's categories as well.
 
-inline void LibC_Func1() {
-  TRACE_EVENT("libC_Cat2", "LibC_Func1");
-}
+inline void LibC_Func1() { TRACE_EVENT("libC_Cat2", "LibC_Func1"); }
 
 inline void LibC_Func2() {
   TRACE_EVENT("libC_Cat1", "LibC_Func2");

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "track_event_category_registry.h"
+
 #include <string>
 #include <vector>
 
@@ -46,7 +47,6 @@ Trace TraceProcess(const Trace &packets);
   {                                                                            \
     struct perfetto_trace_point_unique_type;                                   \
     perfetto::AddPacket(                                                       \
-        ::perfetto::internal::GetCategoryId<perfetto_trace_point_unique_type>( \
-            category_name),                                                    \
-        event_name);                                                           \
+        ::perfetto::internal::TypedCategorySearchResult<perfetto_trace_point_unique_type, ::perfetto::internal::GetCategoryId<perfetto_trace_point_unique_type>( \
+            category_name)>::GlobalCategoryId(), event_name); \
   }

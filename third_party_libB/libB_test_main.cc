@@ -7,6 +7,9 @@ void TopLevelFunc() {
   LibB_Func1();
   LibB_Func2();
   LibB_Func3();
+  LibB_Func2();
+  LibB_Func2();
+  LibB_Func4();
 }
 
 int main() {

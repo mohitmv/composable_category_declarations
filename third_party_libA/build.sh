@@ -15,5 +15,7 @@ g++ $CCFLAGS ../perfetto_sdk/tracing.cc -o /tmp/perfetto_sdk/tracing.o &&
 
 g++ /tmp/libA/libA_test_main.o /tmp/libA/liba_categories.o /tmp/perfetto_sdk/track_event_category_registry.o /tmp/perfetto_sdk/tracing.o  /tmp/libA/liba.o -o /tmp/libA/libA_test_main &&
 
+# g++ /tmp/libA/libA_test_main.o /tmp/libA/libA_categories.o -o /tmp/libA/libA_test_main &&
+
 /tmp/libA/libA_test_main
 

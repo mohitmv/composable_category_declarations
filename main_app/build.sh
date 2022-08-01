@@ -16,7 +16,6 @@ g++ $CCFLAGS main_using_libA.cc       -o /tmp/main_app/main_using_libA.o &&
 g++ $CCFLAGS main_using_libA_and_B.cc -o /tmp/main_app/main_using_libA_and_B.o &&
 g++ $CCFLAGS main_using_libA_and_C.cc -o /tmp/main_app/main_using_libA_and_C.o &&
 
-
 g++ $CCFLAGS ../third_party_libC/libC_categories.cc -o /tmp/libC/libC_categories.o &&
 g++ $CCFLAGS ../third_party_libC/libC.cc -o /tmp/libC/libC.o &&
 
@@ -30,5 +29,6 @@ g++ $CCFLAGS ../perfetto_sdk/track_event_category_registry.cc -o /tmp/perfetto_s
 g++ $CCFLAGS ../perfetto_sdk/tracing.cc -o /tmp/perfetto_sdk/tracing.o &&
 
 g++ /tmp/main_app/main_app_test_main.o /tmp/main_app/main_app.o /tmp/main_app/main_using_libA.o /tmp/main_app/main_using_libA_and_B.o /tmp/main_app/main_using_libA_and_C.o /tmp/main_app/main_app_categories.o /tmp/libC/libC.o /tmp/libC/libC_categories.o /tmp/libA/libA.o /tmp/libA/libA_categories.o  /tmp/libB/libB.o /tmp/libB/libB_categories.o  /tmp/perfetto_sdk/track_event_category_registry.o /tmp/perfetto_sdk/tracing.o  -o /tmp/main_app/main_app_test_main &&
+
 
 /tmp/main_app/main_app_test_main

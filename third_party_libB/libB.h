@@ -9,6 +9,6 @@ inline void LibB_Func2() { TRACE_EVENT("libB_Cat1", "LibB_Func2"); }
 void LibB_Func3();
 
 inline void LibB_Func4() {
-  TRACE_EVENT("libB_Cat1", "LibB_Func4");
+  TRACE_EVENT("libB_Cat4", "LibB_Func4");
   return LibB_Func3();
 }

@@ -2,7 +2,7 @@
 
 #include "perfetto_sdk/tracing.h"
 
-PERFETTO_DECLARE_CATEGORIES(PERFETTO_CATEGORY_DECLARATION_SLOT_NUMBER(0),
+PERFETTO_DECLARE_CATEGORIES(main_app,
                             perfetto::Category{"main_app_Cat1"},
                             perfetto::Category{"main_app_Cat2"},
                             perfetto::Category{"main_app_Cat3"},

@@ -13,15 +13,11 @@ Trace g_packets;
 
 Session StartSession() {
   g_packets.clear();
-  const auto &registry_slots = internal::GetRegistrySlots();
-  for (size_t i = 0; i <= internal::kMaxCategorySlotNumber; i++) {
-    const auto &slot = registry_slots[i];
-    for (size_t j = 0; j < slot.length; j++) {
-      size_t category_id =
-          (j << internal::kNumBitsRequiredForCategorySlotNumber) | i;
-      AddPacket(TracePacket{TracePacket::MappingIID, category_id, "",
-                            slot.categories[j].name});
-    }
+  auto &registry = internal::GetGlobalCategoryRegistry();
+  for (size_t i = 0; i < registry.global_categories.size(); i++) {
+    size_t category_id = i+1;
+    AddPacket(TracePacket{TracePacket::MappingIID, category_id, "",
+                          registry.global_categories[i]->name});
   }
   return Session{};
 }

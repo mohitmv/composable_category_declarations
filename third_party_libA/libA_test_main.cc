@@ -1,4 +1,5 @@
 #include "libA.h"
+
 #include "perfetto_sdk/tracing.h"
 
 #include <iostream>
@@ -15,16 +16,21 @@ template <size_t input_value> struct Value {
 
 void Test1() {
   using perfetto::internal::GetCategoryId;
+  using perfetto::internal::TypedCategorySearchResult;
   struct unique_type1;
   // Wrapped in Value<> to prove that expression returned by GetCategoryId is
   // truly a compile time constant.
   std::cout << "category_id = "
-            << Value<GetCategoryId<unique_type1>("libA_Cat2")>::value
+            << GetCategoryId<unique_type1>("libA_Cat3")
             << std::endl;
 }
 
 int main() {
-  Test1();
+  // using namespace perfetto::internal;
+
+  // std::cout << FindCategory<>
+
+  // Test1();
   perfetto::TrackEvent::Register();
   auto session = perfetto::StartSession();
   TopLevelFunc();

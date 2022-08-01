@@ -8,13 +8,13 @@
 
 void MainFunc1UsingLibAAndB() {
   {
+    // This category is getting resolved to libB's categories.
+    TRACE_EVENT("libB_Cat2", "CallingLibB_Func1--");
+    LibB_Func1();
+  }
+  {
     // This category is getting resolved to libA's categories.
     TRACE_EVENT("libA_Cat2", "CallingLibA_Func2");
     LibA_Func2();
-  }
-  {
-    // This category is getting resolved to libB's categories.
-    TRACE_EVENT("libB_Cat2", "CallingLibB_Func1");
-    LibB_Func1();
   }
 }

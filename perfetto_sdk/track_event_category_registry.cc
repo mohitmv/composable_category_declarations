@@ -5,34 +5,23 @@
 namespace perfetto {
 namespace internal {
 
-// TrackEventCategoryRegistry category_declaration_slots[16] = {};
-
 const Category *GetCategoryAtRunTime(size_t category_id) {
-  size_t slot_number = category_id & kMaxCategorySlotNumber;
-  auto &slot = GetRegistrySlots()[slot_number];
-  if (slot.categories == nullptr)
-    return nullptr;
-  auto index = category_id >> kNumBitsRequiredForCategorySlotNumber;
-  if (!(0 <= index && index < slot.length))
-    return nullptr;
-  return &slot.categories[index];
+  auto &registry = GetGlobalCategoryRegistry();
+  return registry.global_categories.at(category_id - 1);
 }
 
-CategoryDeclarationOnConstructor::CategoryDeclarationOnConstructor(
-    size_t slot_number, TrackEventCategoryRegistry decl) {
-  auto &slot = GetRegistrySlots()[slot_number];
-  if (slot.compilation_unit_name != nullptr) {
-    std::cerr << "Slot number " << slot_number << " is already used in "
-              << slot.compilation_unit_name << " . It cannot be used again in "
-              << decl.compilation_unit_name << " .";
-    std::abort();
+RegisterOnConstructor::RegisterOnConstructor(
+    const Category* category_list, size_t* global_category_ids, size_t len) {
+  auto &registry = GetGlobalCategoryRegistry();
+  for (size_t i = 0; i < len; i++) {
+    registry.global_categories.push_back(&category_list[i]);
+    global_category_ids[i] = registry.global_categories.size();
   }
-  slot = decl;
 }
 
-RegistrySlotsType &GetRegistrySlots() {
-  static RegistrySlotsType slots = {};
-  return slots;
+GlobalCategoryRegistry &GetGlobalCategoryRegistry() {
+  static GlobalCategoryRegistry registry;
+  return registry;
 }
 
 } // namespace internal

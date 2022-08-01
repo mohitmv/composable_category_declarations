@@ -26,7 +26,8 @@ int main() {
   std::cout << "Trace = \n";
   perfetto::Print(trace);
   auto trace2 = perfetto::TraceProcess(trace);
-  std::cout << "---------\nAfter TraceProcessor (replacing category_id by names) = \n";
+  std::cout << "---------\nAfter TraceProcessor (replacing category_id by "
+               "names) = \n";
   perfetto::Print(trace2);
   std::cout << "---------\n";
 }

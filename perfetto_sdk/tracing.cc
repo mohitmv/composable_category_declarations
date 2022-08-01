@@ -15,7 +15,7 @@ Session StartSession() {
   g_packets.clear();
   auto &registry = internal::GetGlobalCategoryRegistry();
   for (size_t i = 0; i < registry.global_categories.size(); i++) {
-    size_t category_id = i+1;
+    size_t category_id = i + 1;
     AddPacket(TracePacket{TracePacket::MappingIID, category_id, "",
                           registry.global_categories[i]->name});
   }

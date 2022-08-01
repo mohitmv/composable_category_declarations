@@ -10,27 +10,7 @@ void TopLevelFunc() {
   LibA_Func3();
 }
 
-template <size_t input_value> struct Value {
-  static constexpr size_t value = input_value;
-};
-
-void Test1() {
-  using perfetto::internal::GetCategoryId;
-  using perfetto::internal::TypedCategorySearchResult;
-  struct unique_type1;
-  // Wrapped in Value<> to prove that expression returned by GetCategoryId is
-  // truly a compile time constant.
-  std::cout << "category_id = "
-            << GetCategoryId<unique_type1>("libA_Cat3")
-            << std::endl;
-}
-
 int main() {
-  // using namespace perfetto::internal;
-
-  // std::cout << FindCategory<>
-
-  // Test1();
   perfetto::TrackEvent::Register();
   auto session = perfetto::StartSession();
   TopLevelFunc();

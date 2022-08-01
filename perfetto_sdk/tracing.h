@@ -46,7 +46,10 @@ Trace TraceProcess(const Trace &packets);
 #define TRACE_EVENT(category_name, event_name)                                 \
   {                                                                            \
     struct perfetto_trace_point_unique_type;                                   \
-    perfetto::AddPacket(                                                       \
-        ::perfetto::internal::TypedCategorySearchResult<perfetto_trace_point_unique_type, ::perfetto::internal::GetCategoryId<perfetto_trace_point_unique_type>( \
-            category_name)>::GlobalCategoryId(), event_name); \
+    perfetto::AddPacket(::perfetto::internal::TypedCategorySearchResult<       \
+                            perfetto_trace_point_unique_type,                  \
+                            ::perfetto::internal::GetCategoryId<               \
+                                perfetto_trace_point_unique_type>(             \
+                                category_name)>::GlobalCategoryId(),           \
+                        event_name);                                           \
   }

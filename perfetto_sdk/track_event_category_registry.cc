@@ -10,8 +10,9 @@ const Category *GetCategoryAtRunTime(size_t category_id) {
   return registry.global_categories.at(category_id - 1);
 }
 
-RegisterOnConstructor::RegisterOnConstructor(
-    const Category* category_list, size_t* global_category_ids, size_t len) {
+RegisterOnConstructor::RegisterOnConstructor(const Category *category_list,
+                                             size_t *global_category_ids,
+                                             size_t len) {
   auto &registry = GetGlobalCategoryRegistry();
   for (size_t i = 0; i < len; i++) {
     registry.global_categories.push_back(&category_list[i]);

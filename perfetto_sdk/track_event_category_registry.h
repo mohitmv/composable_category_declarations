@@ -13,11 +13,19 @@ struct Category {
 namespace internal {
 
 // Local slot_id in a translation unit.
+// If there are 3 category-declarations included in a TU, then
+// LocalSlotIdCounter<0>, LocalSlotIdCounter<1> and LocalSlotIdCounter<2>
+// would be instantiated. The `LocalSlotIdCounter<N>::type` would refer
+// to each of 3 category-declaration-type in the same order they were
+// declared in that TU. Hence it depends on how those headers are included.
+// In other words `LocalSlotIdCounter<0>::type` would refer to the
+// first one, and `LocalSlotIdCounter<1>::type` would refer to the second one.
 template <size_t slot_number> struct LocalSlotIdCounter;
 
 // Error: Failed to find category string. Either the category is not declared
 // or some header declaring this category is not included in current TU.
 static constexpr size_t kInvalidCategoryIndex = static_cast<size_t>(-1);
+
 static constexpr size_t k32BitMask = static_cast<size_t>(0xFFFFFFFF);
 static_assert(sizeof(size_t) == 8, "");
 
@@ -25,9 +33,9 @@ static constexpr bool StringEq(const char *a, const char *b) {
   return *a != *b ? false : (!*a || !*b) ? (*a == *b) : StringEq(a + 1, b + 1);
 }
 
-// Stores slot_number and index of found category in that category declaration.
-// Stored as ((index << 32) | slot_number).
-// This value would be `kInvalidCategoryIndex` if category was not found.
+// - Stores slot_number and index of found category in that category declaration
+// - The value is stored as ((index << 32) | slot_number).
+// - This value would be `kInvalidCategoryIndex` if category was not found.
 using CategorySearchResult = size_t;
 
 template <typename UniqueType, CategorySearchResult result>
@@ -39,9 +47,6 @@ struct TypedCategorySearchResult<UniqueType, kInvalidCategoryIndex> {
   static constexpr size_t index = kInvalidCategoryIndex;
 };
 
-struct perfetto_catg_decl_libA;
-struct perfetto_catg_decl_libB;
-
 template <typename UniqueType, CategorySearchResult result>
 struct TypedCategorySearchResult {
   using type = typename LocalSlotIdCounter<(result & k32BitMask)>::type;
@@ -49,8 +54,17 @@ struct TypedCategorySearchResult {
   static size_t GlobalCategoryId() { return type::kGlobalCategoryIds[index]; }
 };
 
+// Given a category_name, find it in category list of a given
+// category-declaration-type.
+// PS: Each category declaration gets a type, suffixed by the identifier passed
+// in PERFETTO_DECLARE_CATEGORIES macro. We will refer to it as
+// category-declaration-type or sometimes `tag_type` if the context is
+// understood. We can identify it by slot_number as well, because if we know the
+// slot number, tag_type is simply `LocalSlotIdCounter<slot_number>::type`.
+// Returns the matching index in the list. Returns kInvalidCategoryIndex if not
+// found.
 template <typename tag_type>
-static constexpr size_t FindCategoryInSlot(const char *name, int index = 0) {
+static constexpr size_t FindCategoryInSlot(const char *name, size_t index = 0) {
   return (index == tag_type::kCategoryCount)
              ? kInvalidCategoryIndex
              : (StringEq(tag_type::kCategories[index].name, name)
@@ -60,21 +74,35 @@ static constexpr size_t FindCategoryInSlot(const char *name, int index = 0) {
 
 template <size_t v> struct SizeType { static constexpr size_t value = v; };
 
-template <typename UniqueType, size_t slot = 0, int = 0>
+// Find the smallest non negative ineteger N such that `LocalSlotIdCounter<N>`
+// is not defined. UniqueType is passed so that template doesn't return old
+// value. Note that old cached value could be wrong if used in future because
+// LocalSlotIdCounter<> might be instantiated for new integers in future.
+template <typename UniqueType, size_t slot = 0, size_t = 0>
 struct FindNextUndefinedSlot : SizeType<slot> {};
 
+// Note: `sizeof(LocalSlotIdCounter<slot>)` fails if LocalSlotIdCounter<slot>
+// was not instantiated.
 template <typename UniqueType, size_t slot>
 struct FindNextUndefinedSlot<UniqueType, slot,
                              0 * sizeof(LocalSlotIdCounter<slot>)>
     : FindNextUndefinedSlot<UniqueType, slot + 1> {};
 
-template <typename UniqueType, size_t slot = 0, int = 0>
+
+// `GetCategoryIdImpl` is used for searching category_name across all the
+// defined slots.
+// Returns ((index << 32) | slot_number) if found.
+// Returns `kInvalidCategoryIndex` if not found.
+template <typename UniqueType, size_t slot = 0, size_t = 0>
 struct GetCategoryIdImpl {
   static constexpr CategorySearchResult Get(const char *name) {
     return kInvalidCategoryIndex;
   }
 };
 
+// Induction step for `GetCategoryIdImpl`. If not found in current slot, search
+// in next slot. Continue recursively until `LocalSlotIdCounter<slot_number>`
+// is defined.
 template <typename UniqueType, size_t slot_number>
 struct GetCategoryIdImpl<UniqueType, slot_number,
                          0 * sizeof(LocalSlotIdCounter<slot_number>)> {
@@ -85,9 +113,9 @@ struct GetCategoryIdImpl<UniqueType, slot_number,
         name);
   }
 
-  // This helper method is to prevent double-evaluation of
-  // FindCategoryInSlot<...>(name). We need this, because C++11 doesn't allow
-  // constexpr local variable declaration.
+  // This helper method is used to prevent double-evaluation of
+  // FindCategoryInSlot<...>(name) in above Get method. We need this,
+  // because C++11 doesn't allow constexpr local variable declaration.
   static constexpr CategorySearchResult GetHelper(size_t index,
                                                   const char *name) {
     return index != kInvalidCategoryIndex

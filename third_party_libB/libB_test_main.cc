@@ -14,7 +14,8 @@ void TopLevelFunc() {
 
 int main() {
   perfetto::TrackEvent::Register();
-  auto session = perfetto::StartSession();
+  auto session =
+      perfetto::StartSession({"libB_Cat3", "libB_Cat4", "libB_Cat1"});
   TopLevelFunc();
   auto trace = session.StopAndReturnTrace();
   std::cout << "Trace = \n";

@@ -11,13 +11,14 @@ namespace perfetto {
 
 Trace g_packets;
 
-Session StartSession() {
+Session StartSession(const std::vector<std::string> &category_names) {
   g_packets.clear();
-  auto &registry = internal::GetGlobalCategoryRegistry();
-  for (size_t i = 0; i < registry.global_categories.size(); i++) {
-    size_t category_id = i + 1;
-    AddPacket(TracePacket{TracePacket::MappingIID, category_id, "",
-                          registry.global_categories[i]->name});
+  auto &global_registry = internal::GetGlobalCategoryRegistry();
+  auto id_map = global_registry.EnableCategories(category_names);
+  for (auto &item : id_map) {
+    auto category_id = item.first;
+    const auto &name = item.second;
+    AddPacket(TracePacket{TracePacket::MappingIID, category_id, "", name});
   }
   return Session{};
 }

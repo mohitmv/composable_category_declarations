@@ -1,7 +1,9 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 namespace perfetto {
@@ -88,7 +90,6 @@ struct FindNextUndefinedSlot<UniqueType, slot,
                              0 * sizeof(LocalSlotIdCounter<slot>)>
     : FindNextUndefinedSlot<UniqueType, slot + 1> {};
 
-
 // `GetCategoryIdImpl` is used for searching category_name across all the
 // defined slots.
 // Returns ((index << 32) | slot_number) if found.
@@ -131,20 +132,37 @@ static constexpr CategorySearchResult GetCategoryId(const char *name) {
   return GetCategoryIdImpl<UniqueType, 0>::Get(name);
 }
 
-// Returns nullptr if invalid category_id.
-// Should be called after completion of static initialization.
-const Category *GetCategoryAtRunTime(size_t category_id);
+struct CategoryRegistry {
+  const Category *category_list = nullptr;
+  size_t length = 0;
+  size_t global_category_id_offset = 0;
+  std::atomic<uint8_t> *is_enabled_array = nullptr;
+  std::atomic<bool> is_registered{false};
+};
 
-struct GlobalCategoryRegistry {
-  std::vector<const Category *> global_categories;
+class GlobalCategoryRegistry {
+public:
+  // Mapping from category_id to category_name.
+  using IdMap = std::unordered_map<size_t, std::string>;
+  // IdMap returned so that tracing session can put IdMap in the initial
+  // trace packets.
+  IdMap EnableCategories(const std::vector<std::string> &category_names);
+  std::array<CategoryRegistry, 32> registories_;
+  std::atomic<size_t> global_category_ids_offset_{0};
+  std::atomic<size_t> num_registory_{0};
 };
 
 GlobalCategoryRegistry &GetGlobalCategoryRegistry();
 
-// Its thread safe, because static-init happens sequentially.
+// Its used in static-init.
 struct RegisterOnConstructor {
   RegisterOnConstructor(const Category *category_list,
-                        size_t *global_category_ids, size_t len);
+                        size_t *global_category_ids_offset,
+                        std::atomic<uint8_t> *is_enabled_array, size_t length);
+  ~RegisterOnConstructor();
+
+private:
+  size_t registory_index_;
 };
 
 } // namespace internal
@@ -163,7 +181,8 @@ struct RegisterOnConstructor {
     static constexpr ::perfetto::Category kCategories[] = {__VA_ARGS__};       \
     static constexpr size_t kCategoryCount =                                   \
         sizeof(kCategories) / sizeof(kCategories[0]);                          \
-    static size_t kGlobalCategoryIds[kCategoryCount];                          \
+    static size_t kGlobalCategoryIdsOffset;                                    \
+    static std::atomic<uint8_t> kIsEnabled[kCategoryCount];                    \
   };                                                                           \
   template <> struct LocalSlotIdCounter<tag_slot_number_type::slot_number> {   \
     using type = tag_type;                                                     \
@@ -182,10 +201,11 @@ struct RegisterOnConstructor {
   namespace perfetto {                                                         \
   namespace internal {                                                         \
   const ::perfetto::Category tag_type::kCategories[];                          \
-  size_t tag_type::kGlobalCategoryIds[] = {};                                  \
+  size_t tag_type::kGlobalCategoryIdsOffset = 0;                               \
+  std::atomic<uint8_t> tag_type::kIsEnabled[] = {};                            \
   static ::perfetto::internal::RegisterOnConstructor                           \
-      tmp_var(&tag_type::kCategories[0], &tag_type::kGlobalCategoryIds[0],     \
-              tag_type::kCategoryCount);                                       \
+      tmp_var(&tag_type::kCategories[0], &tag_type::kGlobalCategoryIdsOffset,  \
+              &tag_type::kIsEnabled[0], tag_type::kCategoryCount);             \
   }                                                                            \
   }
 

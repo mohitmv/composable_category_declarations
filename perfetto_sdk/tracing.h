@@ -35,7 +35,7 @@ struct Session {
   Trace StopAndReturnTrace() { return g_packets; }
 };
 
-Session StartSession();
+Session StartSession(const std::vector<std::string> &category_names);
 
 void Print(const Trace &packets);
 
@@ -46,10 +46,13 @@ Trace TraceProcess(const Trace &packets);
 #define TRACE_EVENT(category_name, event_name)                                 \
   {                                                                            \
     struct perfetto_trace_point_unique_type;                                   \
-    perfetto::AddPacket(::perfetto::internal::TypedCategorySearchResult<       \
-                            perfetto_trace_point_unique_type,                  \
-                            ::perfetto::internal::GetCategoryId<               \
-                                perfetto_trace_point_unique_type>(             \
-                                category_name)>::GlobalCategoryId(),           \
-                        event_name);                                           \
+    using SearchResult = ::perfetto::internal::TypedCategorySearchResult<      \
+        perfetto_trace_point_unique_type,                                      \
+        ::perfetto::internal::GetCategoryId<perfetto_trace_point_unique_type>( \
+            category_name)>;                                                   \
+    if (SearchResult::type::kIsEnabled[SearchResult::index]) {                 \
+      perfetto::AddPacket(SearchResult::type::kGlobalCategoryIdsOffset +       \
+                              SearchResult::index,                             \
+                          event_name);                                         \
+    }                                                                          \
   }
